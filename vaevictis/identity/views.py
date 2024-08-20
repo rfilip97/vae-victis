@@ -5,6 +5,7 @@ from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import LoginSerializer
+from rest_framework.permissions import IsAuthenticated
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
@@ -18,5 +19,13 @@ class LoginAPIView(APIView):
         login(request, user)
         return Response({"message": "Login successful"}, status=status.HTTP_200_OK)
 
-    def get(self, request, *args, **kwargs):
-        return Response({"detail": "CSRF cookie set"}, status=status.HTTP_200_OK)
+
+class TestAuthView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.is_authenticated:
+            return Response(
+                {"message": f"You are logged in, {request.user.username}"},
+                status=status.HTTP_200_OK,
+            )
