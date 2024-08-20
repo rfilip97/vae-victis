@@ -76,3 +76,51 @@ class LoginAPIViewTests(APITestCase):
         self.assertEqual(
             response.data, {"non_field_errors": ["User account is disabled."]}
         )
+
+
+class RegisterAPIViewTests(APITestCase):
+
+    def setUp(self):
+        self.register_url = reverse("register")
+
+    def test_register_success(self):
+        data = {
+            "username": "newuser",
+            "password": "newpassword",
+            "password2": "newpassword",
+            "email": "newuser@example.com",
+        }
+        response = self.client.post(self.register_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(User.objects.count(), 1)
+        self.assertEqual(User.objects.get().username, "newuser")
+
+    def test_register_password_mismatch(self):
+        data = {
+            "username": "newuser",
+            "password": "newpassword",
+            "password2": "differentpassword",
+            "email": "newuser@example.com",
+        }
+        response = self.client.post(self.register_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Passwords do not match.", response.data["non_field_errors"])
+
+    def test_register_missing_fields(self):
+        data = {"username": "newuser", "email": "newuser@example.com"}
+        response = self.client.post(self.register_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("password", response.data)
+        self.assertIn("password2", response.data)
+
+    def test_register_duplicate_username(self):
+        User.objects.create_user(username="existinguser", password="password")
+        data = {
+            "username": "existinguser",
+            "password": "newpassword",
+            "password2": "newpassword",
+            "email": "newuser@example.com",
+        }
+        response = self.client.post(self.register_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("username", response.data)
