@@ -1,5 +1,7 @@
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from rest_framework import serializers
+
+User = get_user_model()
 
 
 class LoginSerializer(serializers.Serializer):
@@ -11,11 +13,17 @@ class LoginSerializer(serializers.Serializer):
         password = data.get("password")
 
         if username and password:
-            user = authenticate(username=username, password=password)
-            if user:
+            try:
+                user = User.objects.get(username=username)
+
                 if not user.is_active:
                     raise serializers.ValidationError("User account is disabled.")
-            else:
+
+                user = authenticate(username=username, password=password)
+                if user is None:
+                    raise serializers.ValidationError("Invalid login credentials.")
+
+            except User.DoesNotExist:
                 raise serializers.ValidationError("Invalid login credentials.")
         else:
             raise serializers.ValidationError(
@@ -23,4 +31,5 @@ class LoginSerializer(serializers.Serializer):
             )
 
         data["user"] = user
+
         return data
