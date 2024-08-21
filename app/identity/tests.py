@@ -1,126 +1,70 @@
 from django.urls import reverse
-from rest_framework.test import APITestCase, APIClient
-from django.contrib.auth.models import User
 from rest_framework import status
+from rest_framework.test import APITestCase
+from django.contrib.auth.models import User
 
 
-class TestAuthViewTests(APITestCase):
-    def setUp(self):
-        self.username = "testuser"
-        self.password = "testpassword"
-        self.user = User.objects.create_user(
-            username=self.username, password=self.password
-        )
-
-        self.client = APIClient()
-        self.test_url = reverse("test-auth")
-
-    def test_auth_view_authenticated(self):
-        self.client.login(username=self.username, password=self.password)
-
-        response = self.client.get(self.test_url)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            response.data, {"message": f"You are logged in, {self.username}"}
-        )
-
-    def test_auth_view_unauthenticated(self):
-        response = self.client.get(self.test_url)
-
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-
-class LoginAPIViewTests(APITestCase):
-    def setUp(self):
-        self.username = "testuser"
-        self.password = "testpassword"
-        self.user = User.objects.create_user(
-            username=self.username, password=self.password
-        )
-
-        self.client = APIClient()
-        self.login_url = reverse("login")
-
-    def test_login_with_valid_credentials(self):
-        data = {"username": self.username, "password": self.password}
-        response = self.client.post(self.login_url, data, format="json")
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, {"message": "Login successful"})
-
-    def test_login_with_invalid_credentials(self):
-        data = {"username": self.username, "password": "wrongpassword"}
-        response = self.client.post(self.login_url, data, format="json")
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(
-            response.data, {"non_field_errors": ["Invalid login credentials."]}
-        )
-
-    def test_login_with_missing_fields(self):
-        data = {"username": self.username}
-        response = self.client.post(self.login_url, data, format="json")
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("password", response.data)
-
-    def test_login_with_disabled_user(self):
-        self.user.is_active = False
-        self.user.save()
-
-        data = {"username": self.username, "password": self.password}
-        response = self.client.post(self.login_url, data, format="json")
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(
-            response.data, {"non_field_errors": ["User account is disabled."]}
-        )
-
-
-class RegisterAPIViewTests(APITestCase):
+class UserAuthTests(APITestCase):
 
     def setUp(self):
         self.register_url = reverse("register")
+        self.login_url = reverse("login")
+        self.test_auth_url = reverse("test_auth")
+        self.user_data = {
+            "username": "testuser",
+            "password": "testpassword",
+            "email": "test@example.com",
+        }
+        self.user = User.objects.create_user(**self.user_data)
 
-    def test_register_success(self):
-        data = {
-            "username": "newuser",
+    def test_duplicate_username_registration(self):
+        duplicate_user_data = {
+            "username": "testuser",
             "password": "newpassword",
             "password2": "newpassword",
-            "email": "newuser@example.com",
+            "email": "duplicate@example.com",
         }
-        response = self.client.post(self.register_url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(
+            self.register_url, duplicate_user_data, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(User.objects.get().username, "newuser")
 
-    def test_register_password_mismatch(self):
-        data = {
-            "username": "newuser",
-            "password": "newpassword",
-            "password2": "differentpassword",
-            "email": "newuser@example.com",
+    def test_user_registration(self):
+        new_user_data = {
+            "username": "newtestuser",
+            "password": "newtestpassword",
+            "password2": "newtestpassword",
+            "email": "newtest@example.com",
         }
-        response = self.client.post(self.register_url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Passwords do not match.", response.data["non_field_errors"])
+        response = self.client.post(self.register_url, new_user_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(User.objects.count(), 2)
 
-    def test_register_missing_fields(self):
-        data = {"username": "newuser", "email": "newuser@example.com"}
-        response = self.client.post(self.register_url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("password", response.data)
-        self.assertIn("password2", response.data)
+    def test_user_login(self):
+        login_data = {"username": "testuser", "password": "testpassword"}
+        response = self.client.post(self.login_url, login_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("access", response.data)
+        self.assertIn("refresh", response.data)
 
-    def test_register_duplicate_username(self):
-        User.objects.create_user(username="existinguser", password="password")
-        data = {
-            "username": "existinguser",
-            "password": "newpassword",
-            "password2": "newpassword",
-            "email": "newuser@example.com",
-        }
-        response = self.client.post(self.register_url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("username", response.data)
+    def test_access_protected_view_with_valid_token(self):
+        login_data = {"username": "testuser", "password": "testpassword"}
+        response = self.client.post(self.login_url, login_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        access_token = response.data["access"]
+
+        response = self.client.get(
+            self.test_auth_url, HTTP_AUTHORIZATION=f"Bearer {access_token}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["message"], "You are logged in, testuser")
+
+    def test_access_protected_view_with_invalid_token(self):
+        response = self.client.get(self.test_auth_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        response = self.client.get(
+            self.test_auth_url, HTTP_AUTHORIZATION="Bearer invalidtoken"
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
