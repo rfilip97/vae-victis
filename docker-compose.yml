@@ -1,0 +1,39 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: awesomedb 
+      POSTGRES_USER: root 
+      POSTGRES_PASSWORD: pass 
+    networks:
+      - main 
+
+  web:
+    build: .
+    command: /app/entrypoint.sh
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DEBUG: "1"
+      DB_NAME: awesomedb 
+      DB_USER: root 
+      DB_PASSWORD: pass 
+      DB_HOST: db
+      DB_PORT: 5432
+    networks:
+      - main 
+
+volumes:
+  postgres_data:
+
+networks:
+  main:
+
