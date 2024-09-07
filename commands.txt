@@ -1,0 +1,9 @@
+# Build app
+docker compose up --build
+
+# Run tests
+docker-compose exec web python manage.py test
+
+# Code formatting
+black .
+
