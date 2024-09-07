@@ -1,6 +1,7 @@
 import os
 import requests
 from django.http import JsonResponse
+from utils.config import Config
 
 
 def scan_book(request):
@@ -9,7 +10,7 @@ def scan_book(request):
     if isbn:
         api_key = os.getenv("BOOKS_API_KEY")
 
-        url = f"https://www.googleapis.com/books/v1/volumes?q=ISBN:{isbn}"
+        url = f"{Config.books_api_url}/books/v1/volumes?q=ISBN:{isbn}"
 
         headers = {"x-goog-api-key": api_key}
 
