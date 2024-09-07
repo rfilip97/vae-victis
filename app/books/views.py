@@ -13,7 +13,9 @@ class ScanBookView(APIView):
         if isbn:
             return self.fetch_book_info_for(isbn)
         else:
-            return Response({"error": "ISBN not provided"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "ISBN not provided"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
     def fetch_book_info_for(self, isbn):
         books_repository = BooksRepositoryFactory.get_repository()
@@ -22,5 +24,6 @@ class ScanBookView(APIView):
             book_info = books_repository.get_book_info(isbn)
             return Response(book_info, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
