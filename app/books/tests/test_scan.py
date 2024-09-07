@@ -25,4 +25,11 @@ class ScanTest(APITestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        self.assertEqual(json.loads(response.content), STUBBED_GOOGLE_BOOKS_RESPONSE)
+        expected_response = {
+            "isbn": "9786067580648",
+            "title": "Dune   - Editura Nemira",
+            "author": "Frank Herbert",
+            "thumbnail": "http://books.google.com/books/content?id=kL_KDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+        }
+
+        self.assertEqual(json.loads(response.content), expected_response)
