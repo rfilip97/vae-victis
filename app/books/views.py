@@ -1,21 +1,26 @@
-from django.http import JsonResponse
+from rest_framework import permissions, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from repositories.books_repository.book_repository_factory import BooksRepositoryFactory
 
 
-def scan_book(request):
-    isbn = request.GET.get("isbn", None)
+class ScanBookView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
-    if isbn:
-        return fetch_book_info_for(isbn)
-    else:
-        return JsonResponse({"error": "ISBN not provided"}, status=400)
+    def get(self, request):
+        isbn = request.GET.get("isbn", None)
 
+        if isbn:
+            return self.fetch_book_info_for(isbn)
+        else:
+            return Response({"error": "ISBN not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-def fetch_book_info_for(isbn):
-    books_repository = BooksRepositoryFactory.get_repository()
+    def fetch_book_info_for(self, isbn):
+        books_repository = BooksRepositoryFactory.get_repository()
 
-    try:
-        book_info = books_repository.get_book_info(isbn)
-        return JsonResponse(book_info, safe=False)
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        try:
+            book_info = books_repository.get_book_info(isbn)
+            return Response(book_info, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
