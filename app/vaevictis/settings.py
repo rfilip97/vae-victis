@@ -46,6 +46,7 @@ SIMPLE_JWT = {
 # Application definition
 
 INSTALLED_APPS = [
+    "books",
     "identity",
     "rest_framework",
     "rest_framework_simplejwt",
