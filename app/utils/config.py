@@ -3,7 +3,7 @@ import os
 
 
 class Config:
-    _config_data = {}  # Class-level attribute to store the configuration data
+    _config_data = {}
 
     @classmethod
     def load_config(cls):

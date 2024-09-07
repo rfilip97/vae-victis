@@ -1,4 +1,5 @@
 {
-    "books_api_url": "https://www.googleapis.com"
+    "books_api_url": "https://www.googleapis.com",
+    "mock_books_responses": true
 }
 
