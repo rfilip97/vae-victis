@@ -5,6 +5,64 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from books.models import Book, UserBook, Item
 
 
+class ItemDetailViewTest(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", password="testpass")
+        refresh = RefreshToken.for_user(self.user)
+        self.access_token = str(refresh.access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.access_token}")
+
+        self.book = Book.objects.create(
+            isbn="9786067580648",
+            title="Dune   - Editura Nemira",
+            author="Frank Herbert",
+            image_url="http://books.google.com/books/content?id=kL_KDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+        )
+
+        self.item = Item.objects.create(
+            user=self.user, resource_type="book", resource_id=self.book.id
+        )
+        self.user_book = UserBook.objects.create(
+            user=self.user,
+            book=self.book,
+            title_override="Dune: Special Edition",
+            author_override="Frank Herbert Jr.",
+            quantity=1,
+        )
+
+    def test_get_item_success(self):
+        response = self.client.get(reverse("item_details", args=[self.item.id]))
+
+        self.assertEqual(response.status_code, 200)
+
+        expected_data = {
+            "id": self.item.id,
+            "isbn": "9786067580648",
+            "title": "Dune: Special Edition",
+            "author": "Frank Herbert Jr.",
+            "thumbnail": self.book.image_url,
+            "quantity": 1,
+        }
+
+        self.assertEqual(response.json(), expected_data)
+
+    def test_get_item_not_found(self):
+        response = self.client.get(reverse("item_details", args=[999]))
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(
+            response.data["error"], "Item not found or does not belong to you"
+        )
+
+    def test_get_item_no_user_book_association(self):
+        self.user_book.delete()
+
+        response = self.client.get(reverse("item_details", args=[self.item.id]))
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.data["error"], "No such user-book association found")
+
+
 class AddItemTest(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="testuser", password="testpass")
