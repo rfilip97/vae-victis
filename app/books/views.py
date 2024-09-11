@@ -8,6 +8,33 @@ from .models import Book, Item, UserBook
 class ItemView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    def get(self, request):
+        return Response(self.get_items_for(request.user), status=status.HTTP_200_OK)
+
+    def get_items_for(self, user):
+        items = Item.objects.filter(user=user)
+        items_data = []
+
+        for item in items:
+            resource = item.get_resource()
+
+            try:
+                user_book = UserBook.objects.get(user=user, book=resource)
+                items_data.append(self.item_data_from(resource, user_book))
+            except UserBook.DoesNotExist:
+                continue
+
+        return items_data
+
+    def item_data_from(self, resource, user_book):
+        return {
+            "isbn": resource.isbn,
+            "title": user_book.title_override or resource.title,
+            "author": user_book.author_override or resource.author,
+            "thumbnail": resource.image_url,
+            "quantity": user_book.quantity,
+        }
+
     def post(self, request):
         item_type = request.data.get("type")
         isbn = request.data.get("isbn")
