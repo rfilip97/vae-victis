@@ -10,3 +10,6 @@ black .
 # Migrate
 python manage.py makemigrations
 docker-compose exec web python manage.py migrate
+
+# Open Admin Panel
+<in browser>: visit http://0.0.0.0:8000/admin

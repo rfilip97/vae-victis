@@ -2,7 +2,69 @@ from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from repositories.books_repository.book_repository_factory import BooksRepositoryFactory
-from .models import Book
+from .models import Book, Item, UserBook
+
+
+class ItemView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        item_type = request.data.get("type")
+        isbn = request.data.get("isbn")
+        title = request.data.get("title")
+        author = request.data.get("author")
+
+        if not self.is_supported_item_type(item_type):
+            return Response(
+                {"error": "Unsupported item type"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        book = self.get_book_by_isbn(isbn)
+        if book is None:
+            return Response(
+                {"error": "Book not found. Please scan the book first."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if self.user_already_has_book(request.user, book):
+            return Response(
+                {"error": "This book has already been added to your items."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        self.add_item_and_user_book(request.user, book, item_type, title, author, isbn)
+
+        return Response(
+            {"message": f"Book '{book.title}' has been added to your items."},
+            status=status.HTTP_201_CREATED,
+        )
+
+    def is_supported_item_type(self, item_type):
+        return item_type == "book"
+
+    def get_book_by_isbn(self, isbn):
+        try:
+            return Book.objects.get(isbn=isbn)
+        except Book.DoesNotExist:
+            return None
+
+    def user_already_has_book(self, user, book):
+        return UserBook.objects.filter(user=user, book=book).exists()
+
+    def add_item_and_user_book(self, user, book, item_type, title, author, isbn):
+        Item.objects.create(
+            user=user,
+            resource_type=item_type,
+            resource_id=book.id,
+        )
+
+        UserBook.objects.create(
+            user=user,
+            book=book,
+            title_override=title,
+            author_override=author,
+            isbn_override=isbn,
+        )
 
 
 class ScanBookView(APIView):
