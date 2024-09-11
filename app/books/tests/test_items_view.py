@@ -142,6 +142,7 @@ class GetUserItemsTest(APITestCase):
 
         expected_response = [
             {
+                "id": 2,
                 "isbn": "9786067580648",
                 "title": "Dune - Custom Edition",
                 "author": "Frank Herbert",
@@ -149,6 +150,7 @@ class GetUserItemsTest(APITestCase):
                 "quantity": 1,
             },
             {
+                "id": 3,
                 "isbn": "9780141981802",
                 "title": "Life 3.0",
                 "author": "Custom Author",

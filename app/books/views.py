@@ -20,14 +20,15 @@ class ItemView(APIView):
 
             try:
                 user_book = UserBook.objects.get(user=user, book=resource)
-                items_data.append(self.item_data_from(resource, user_book))
+                items_data.append(self.item_data_from(item, resource, user_book))
             except UserBook.DoesNotExist:
                 continue
 
         return items_data
 
-    def item_data_from(self, resource, user_book):
+    def item_data_from(self, item, resource, user_book):
         return {
+            "id": item.id,
             "isbn": resource.isbn,
             "title": user_book.title_override or resource.title,
             "author": user_book.author_override or resource.author,
