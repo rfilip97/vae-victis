@@ -62,6 +62,74 @@ class ItemDetailViewTest(APITestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.data["error"], "No such user-book association found")
 
+    def test_update_item_success(self):
+        data = {
+            "type": "book",
+            "title": "Updated Title",
+            "author": "Frank Herbert Jr.",
+            "isbn": "9786067580648",
+            "quantity": 2,
+        }
+
+        response = self.client.put(
+            reverse("item_details", kwargs={"item_id": self.item.id}), data
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["message"], "Item updated successfully")
+
+        self.user_book.refresh_from_db()
+        self.assertEqual(self.user_book.title_override, "Updated Title")
+        self.assertEqual(self.user_book.author_override, "Frank Herbert Jr.")
+        self.assertEqual(self.user_book.isbn_override, "9786067580648")
+        self.assertEqual(self.user_book.quantity, 2)
+
+    def test_update_item_invalid_type(self):
+        data = {
+            "type": "movie",
+            "title": "Dune",
+            "author": "Frank Herbert",
+            "isbn": "9786067580648",
+            "quantity": 1,
+        }
+
+        response = self.client.put(
+            reverse("item_details", kwargs={"item_id": self.item.id}), data
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "Unsupported item type")
+
+    def test_update_item_invalid_quantity(self):
+        data = {
+            "type": "book",
+            "title": "Dune",
+            "author": "Frank Herbert",
+            "isbn": "9786067580648",
+            "quantity": -1,
+        }
+
+        response = self.client.put(
+            reverse("item_details", kwargs={"item_id": self.item.id}), data
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "Quantity cannot be less than 0")
+
+    def test_update_item_not_found(self):
+        data = {
+            "type": "book",
+            "title": "Dune",
+            "author": "Frank Herbert",
+            "isbn": "9786067580648",
+            "quantity": 1,
+        }
+
+        response = self.client.put(
+            reverse("item_details", kwargs={"item_id": 999}), data
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(
+            response.data["error"], "Item not found or does not belong to you"
+        )
+
 
 class AddItemTest(APITestCase):
     def setUp(self):
