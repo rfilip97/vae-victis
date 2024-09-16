@@ -41,6 +41,23 @@ class ItemDetailView(APIView):
                 {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+    def get(self, request, item_id):
+        item = self.get_item_for_user(request.user, item_id)
+        if not item:
+            return Response(
+                {"error": "Item not found or does not belong to you"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        user_book = self.get_user_book(request.user, item)
+        if not user_book:
+            return Response(
+                {"error": "No such user-book association found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response(self.item_data_from(item, user_book), status=status.HTTP_200_OK)
+
     def get_item_for_user(self, user, item_id):
         try:
             return Item.objects.get(id=item_id, user=user)
@@ -66,23 +83,6 @@ class ItemDetailView(APIView):
         user_book.isbn_override = data.get("isbn", user_book.isbn_override)
         user_book.quantity = data.get("quantity", user_book.quantity)
         user_book.save()
-
-    def get(self, request, item_id):
-        item = self.get_item_for_user(request.user, item_id)
-        if not item:
-            return Response(
-                {"error": "Item not found or does not belong to you"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        user_book = self.get_user_book(request.user, item)
-        if not user_book:
-            return Response(
-                {"error": "No such user-book association found"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        return Response(self.item_data_from(item, user_book), status=status.HTTP_200_OK)
 
     def get_item_for_user(self, user, item_id):
         try:
