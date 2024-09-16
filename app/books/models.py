@@ -22,7 +22,11 @@ class UserBook(models.Model):
     isbn_override = models.CharField(max_length=13, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.book.title}"
+        title = self.title_override or self.book.title
+        author = self.author_override or self.book.author
+        isbn = self.isbn_override or self.book.isbn
+
+        return f"{self.user.username} - [quantity: {self.quantity}] {title} by {author} (ISBN: {isbn})"
 
 
 class Item(models.Model):
