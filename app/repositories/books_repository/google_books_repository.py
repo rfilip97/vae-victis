@@ -7,7 +7,7 @@ from .i_book_repository import IBooksRepository
 class GoogleBooksRepository(IBooksRepository):
     def get_book_info(self, isbn):
         api_key = os.getenv("BOOKS_API_KEY")
-        url = f"{Config.books_api_url}/books/v1/volumes?q=ISBN:{isbn}"
+        url = f"{Config.books_api_url}/books/v1/volumes?q=isbn:{isbn}"
         headers = {"x-goog-api-key": api_key}
 
         response = requests.get(url, headers=headers)
