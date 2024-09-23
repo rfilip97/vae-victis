@@ -8,6 +8,9 @@ from books.models import Book, UserBook, Item
 class ItemDetailViewTest(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="testuser", password="testpass")
+        self.other_user = User.objects.create_user(
+            username="otheruser", password="testpass"
+        )
         refresh = RefreshToken.for_user(self.user)
         self.access_token = str(refresh.access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.access_token}")
@@ -29,6 +32,65 @@ class ItemDetailViewTest(APITestCase):
             author_override="Frank Herbert Jr.",
             quantity=1,
         )
+
+    def test_delete_item_success(self):
+        self.assertEqual(Item.objects.count(), 1)
+        self.assertEqual(UserBook.objects.count(), 1)
+
+        response = self.client.delete(
+            reverse("item_details", kwargs={"item_id": self.item.id})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["message"], "Item deleted successfully")
+
+        self.assertEqual(Item.objects.count(), 0)
+        self.assertEqual(UserBook.objects.count(), 0)
+
+    def test_delete_item_not_found(self):
+        response = self.client.delete(reverse("item_details", kwargs={"item_id": 999}))
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(
+            response.data["error"], "Item not found or does not belong to you"
+        )
+
+    def test_delete_item_unauthorized_access(self):
+        other_book = Book.objects.create(
+            isbn="9780143111597",
+            title="The Catcher in the Rye",
+            author="J.D. Salinger",
+            image_url="http://books.google.com/books/content?id=catcher-in-the-rye&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+        )
+        other_item = Item.objects.create(
+            user=self.other_user, resource_type="book", resource_id=other_book.id
+        )
+        UserBook.objects.create(
+            user=self.other_user,
+            book=other_book,
+            title_override=None,
+            author_override=None,
+            isbn_override=None,
+            quantity=1,
+        )
+
+        response = self.client.delete(
+            reverse("item_details", kwargs={"item_id": other_item.id})
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(
+            response.data["error"], "Item not found or does not belong to you"
+        )
+
+    def test_delete_item_without_authentication(self):
+        self.client.credentials()
+
+        response = self.client.delete(
+            reverse("item_details", kwargs={"item_id": self.item.id})
+        )
+
+        self.assertEqual(response.status_code, 401)
 
     def test_get_item_success(self):
         response = self.client.get(reverse("item_details", args=[self.item.id]))
