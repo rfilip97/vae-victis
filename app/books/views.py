@@ -137,9 +137,13 @@ class ItemView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        return Response(self.get_items_for(request.user), status=status.HTTP_200_OK)
+        search_query = request.GET.get("search", None)
 
-    def get_items_for(self, user):
+        return Response(
+            self.get_items_for(request.user, search_query), status=status.HTTP_200_OK
+        )
+
+    def get_items_for(self, user, search_query=None):
         items = Item.objects.filter(user=user)
         items_data = []
 
@@ -148,11 +152,23 @@ class ItemView(APIView):
 
             try:
                 user_book = UserBook.objects.get(user=user, book=resource)
-                items_data.append(self.item_data_from(item, resource, user_book))
+                if self.is_match(resource, user_book, search_query):
+                    items_data.append(self.item_data_from(item, resource, user_book))
             except UserBook.DoesNotExist:
                 continue
 
         return items_data
+
+    def is_match(self, resource, user_book, search_query):
+        if not search_query:
+            return True
+
+        search_query = search_query.lower()
+
+        return (
+            search_query in (user_book.title_override or resource.title).lower()
+            or search_query in (user_book.author_override or resource.author).lower()
+        )
 
     def item_data_from(self, item, resource, user_book):
         return {

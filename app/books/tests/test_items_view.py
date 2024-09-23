@@ -304,7 +304,7 @@ class GetUserItemsTest(APITestCase):
             author_override=None,
             isbn_override=None,
         )
-        Item.objects.create(
+        self.book_item_1 = Item.objects.create(
             user=self.user,
             resource_type="book",
             resource_id=self.book1.id,
@@ -317,7 +317,7 @@ class GetUserItemsTest(APITestCase):
             author_override="Custom Author",
             isbn_override=None,
         )
-        Item.objects.create(
+        self.book_item_2 = Item.objects.create(
             user=self.user,
             resource_type="book",
             resource_id=self.book2.id,
@@ -330,7 +330,7 @@ class GetUserItemsTest(APITestCase):
 
         expected_response = [
             {
-                "id": 2,
+                "id": self.book_item_1.id,
                 "isbn": "9786067580648",
                 "title": "Dune - Custom Edition",
                 "author": "Frank Herbert",
@@ -343,6 +343,24 @@ class GetUserItemsTest(APITestCase):
                 "title": "Life 3.0",
                 "author": "Custom Author",
                 "thumbnail": "http://books.google.com/books/content?id=aDj9EAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+                "quantity": 1,
+            },
+        ]
+
+        self.assertEqual(response.json(), expected_response)
+
+    def test_get_user_items_search_query(self):
+        response = self.client.get(reverse("items"), {"search": "dune"})
+
+        self.assertEqual(response.status_code, 200)
+
+        expected_response = [
+            {
+                "id": self.book_item_1.id,
+                "isbn": "9786067580648",
+                "title": "Dune - Custom Edition",
+                "author": "Frank Herbert",
+                "thumbnail": "http://books.google.com/books/content?id=kL_KDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
                 "quantity": 1,
             },
         ]
