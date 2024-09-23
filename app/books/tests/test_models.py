@@ -45,26 +45,22 @@ class BooksModelTest(TestCase):
         )
 
     def test_books_are_created(self):
-        """Test that books are correctly created."""
         self.assertEqual(Book.objects.count(), 2)
         self.assertEqual(self.book1.title, "Dune")
         self.assertEqual(self.book2.title, "1984")
 
     def test_user_books_are_created(self):
-        """Test that user books are correctly created."""
         self.assertEqual(UserBook.objects.count(), 2)
         self.assertEqual(self.user_book1.book.title, "Dune")
         self.assertEqual(self.user_book2.book.title, "1984")
         self.assertEqual(self.user_book1.user.username, "testuser")
 
     def test_items_are_created(self):
-        """Test that items are correctly created for books."""
         self.assertEqual(Item.objects.count(), 2)
         self.assertEqual(self.item1.get_resource().title, "Dune")
         self.assertEqual(self.item2.get_resource().title, "1984")
 
     def test_nested_relationship_access(self):
-        """Test that nested access from items to user_books and book works."""
         item = self.user.items.first()
         user_book = UserBook.objects.filter(book_id=item.resource_id).first()
         book_title = user_book.book.title

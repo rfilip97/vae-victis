@@ -99,11 +99,11 @@ class ItemDetailViewTest(APITestCase):
 
         expected_data = {
             "id": self.item.id,
-            "isbn": "9786067580648",
-            "title": "Dune: Special Edition",
-            "author": "Frank Herbert Jr.",
+            "isbn": self.book.isbn,
+            "title": self.user_book.title_override,
+            "author": self.user_book.author_override,
             "thumbnail": self.book.image_url,
-            "quantity": 1,
+            "quantity": self.user_book.quantity,
         }
 
         self.assertEqual(response.json(), expected_data)
@@ -125,12 +125,14 @@ class ItemDetailViewTest(APITestCase):
         self.assertEqual(response.data["error"], "No such user-book association found")
 
     def test_update_item_success(self):
+        updated_title = "Updated Title"
+        author = "Frank Herbert Jr."
+        quantity = 2
         data = {
             "type": "book",
-            "title": "Updated Title",
-            "author": "Frank Herbert Jr.",
-            "isbn": "9786067580648",
-            "quantity": 2,
+            "title": updated_title,
+            "author": author,
+            "quantity": quantity,
         }
 
         response = self.client.put(
@@ -140,10 +142,9 @@ class ItemDetailViewTest(APITestCase):
         self.assertEqual(response.data["message"], "Item updated successfully")
 
         self.user_book.refresh_from_db()
-        self.assertEqual(self.user_book.title_override, "Updated Title")
-        self.assertEqual(self.user_book.author_override, "Frank Herbert Jr.")
-        self.assertEqual(self.user_book.isbn_override, "9786067580648")
-        self.assertEqual(self.user_book.quantity, 2)
+        self.assertEqual(self.user_book.title_override, updated_title)
+        self.assertEqual(self.user_book.author_override, author)
+        self.assertEqual(self.user_book.quantity, quantity)
 
     def test_update_item_invalid_type(self):
         data = {
@@ -283,44 +284,44 @@ class GetUserItemsTest(APITestCase):
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.access_token}")
 
-        self.book1 = Book.objects.create(
+        self.book_1 = Book.objects.create(
             isbn="9786067580648",
             title="Dune   - Editura Nemira",
             author="Frank Herbert",
             image_url="http://books.google.com/books/content?id=kL_KDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
         )
 
-        self.book2 = Book.objects.create(
+        self.book_2 = Book.objects.create(
             isbn="9780141981802",
             title="Life 3.0",
             author="Max Tegmark",
             image_url="http://books.google.com/books/content?id=aDj9EAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
         )
 
-        self.user_book1 = UserBook.objects.create(
+        self.user_book_1 = UserBook.objects.create(
             user=self.user,
-            book=self.book1,
+            book=self.book_1,
             title_override="Dune - Custom Edition",
             author_override=None,
             isbn_override=None,
         )
-        self.book_item_1 = Item.objects.create(
+        self.item_1 = Item.objects.create(
             user=self.user,
             resource_type="book",
-            resource_id=self.book1.id,
+            resource_id=self.book_1.id,
         )
 
-        self.user_book2 = UserBook.objects.create(
+        self.user_book_2 = UserBook.objects.create(
             user=self.user,
-            book=self.book2,
+            book=self.book_2,
             title_override=None,
             author_override="Custom Author",
             isbn_override=None,
         )
-        self.book_item_2 = Item.objects.create(
+        self.item_2 = Item.objects.create(
             user=self.user,
             resource_type="book",
-            resource_id=self.book2.id,
+            resource_id=self.book_2.id,
         )
 
     def test_get_user_items(self):
@@ -330,20 +331,20 @@ class GetUserItemsTest(APITestCase):
 
         expected_response = [
             {
-                "id": self.book_item_1.id,
-                "isbn": "9786067580648",
-                "title": "Dune - Custom Edition",
-                "author": "Frank Herbert",
-                "thumbnail": "http://books.google.com/books/content?id=kL_KDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
-                "quantity": 1,
+                "id": self.item_1.id,
+                "isbn": self.book_1.isbn,
+                "title": self.user_book_1.title_override,
+                "author": self.book_1.author,
+                "thumbnail": self.book_1.image_url,
+                "quantity": self.user_book_1.quantity,
             },
             {
-                "id": 3,
-                "isbn": "9780141981802",
-                "title": "Life 3.0",
-                "author": "Custom Author",
-                "thumbnail": "http://books.google.com/books/content?id=aDj9EAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
-                "quantity": 1,
+                "id": self.item_2.id,
+                "isbn": self.book_2.isbn,
+                "title": self.book_2.title,
+                "author": self.user_book_2.author_override,
+                "thumbnail": self.book_2.image_url,
+                "quantity": self.user_book_2.quantity,
             },
         ]
 
@@ -356,12 +357,12 @@ class GetUserItemsTest(APITestCase):
 
         expected_response = [
             {
-                "id": self.book_item_1.id,
-                "isbn": "9786067580648",
-                "title": "Dune - Custom Edition",
-                "author": "Frank Herbert",
-                "thumbnail": "http://books.google.com/books/content?id=kL_KDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
-                "quantity": 1,
+                "id": self.item_1.id,
+                "isbn": self.book_1.isbn,
+                "title": self.user_book_1.title_override,
+                "author": self.book_1.author,
+                "thumbnail": self.book_1.image_url,
+                "quantity": self.user_book_1.quantity,
             },
         ]
 
