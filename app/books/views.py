@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from repositories.books_repository.book_repository_factory import BooksRepositoryFactory
 from .models import Book, Item, UserBook
 from .use_cases.item import DeleteItem, AddItem, GetItem
+from .use_cases.items import GetItems
 
 
 class ItemView(APIView):
@@ -23,48 +24,7 @@ class ItemsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        search_query = request.GET.get("search", None)
-
-        return Response(
-            self.get_items_for(request.user, search_query), status=status.HTTP_200_OK
-        )
-
-    def get_items_for(self, user, search_query=None):
-        items = Item.objects.filter(user=user)
-        items_data = []
-
-        for item in items:
-            resource = item.get_resource()
-
-            try:
-                user_book = UserBook.objects.get(user=user, book=resource)
-                if self.is_match(resource, user_book, search_query):
-                    items_data.append(self.item_data_from(item, resource, user_book))
-            except UserBook.DoesNotExist:
-                continue
-
-        return items_data
-
-    def is_match(self, resource, user_book, search_query):
-        if not search_query:
-            return True
-
-        search_query = search_query.lower()
-
-        return (
-            search_query in (user_book.title_override or resource.title).lower()
-            or search_query in (user_book.author_override or resource.author).lower()
-        )
-
-    def item_data_from(self, item, resource, user_book):
-        return {
-            "id": item.id,
-            "isbn": resource.isbn,
-            "title": user_book.title_override or resource.title,
-            "author": user_book.author_override or resource.author,
-            "thumbnail": resource.image_url,
-            "quantity": user_book.quantity,
-        }
+        return GetItems.perform(request.user, request.GET)
 
     def post(self, request):
         item_type = request.data.get("type")
