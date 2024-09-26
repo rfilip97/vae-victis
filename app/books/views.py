@@ -3,10 +3,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from repositories.books_repository.book_repository_factory import BooksRepositoryFactory
 from .models import Book, Item, UserBook
-from .use_cases.items import DeleteItem, AddItem
+from .use_cases.item import DeleteItem, AddItem
 
 
-class ItemDetailView(APIView):
+class ItemView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request, item_id):
@@ -56,7 +56,7 @@ class ItemDetailView(APIView):
         }
 
 
-class ItemView(APIView):
+class ItemsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
