@@ -3,35 +3,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from repositories.books_repository.book_repository_factory import BooksRepositoryFactory
 from .models import Book, Item, UserBook
+from .use_cases.items import DeleteItem
 
 
 class ItemDetailView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request, item_id):
-        try:
-            item = Item.objects.get(id=item_id, user=request.user)
-
-            resource = item.get_resource()
-            user_book = UserBook.objects.get(user=request.user, book=resource)
-
-            user_book.delete()
-            item.delete()
-
-            return Response(
-                {"message": "Item deleted successfully"}, status=status.HTTP_200_OK
-            )
-
-        except Item.DoesNotExist:
-            return Response(
-                {"error": "Item not found or does not belong to you"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        except UserBook.DoesNotExist:
-            return Response(
-                {"error": "User-book association not found"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        return DeleteItem.perform(user=request.user, item_id=item_id)
 
     def put(self, request, item_id):
         item = self.get_item_for_user(request.user, item_id)
