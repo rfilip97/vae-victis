@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from repositories.books_repository.book_repository_factory import BooksRepositoryFactory
 from .models import Book, Item, UserBook
-from .use_cases.item import DeleteItem, AddItem
+from .use_cases.item import DeleteItem, AddItem, GetItem
 
 
 class ItemView(APIView):
@@ -16,44 +16,7 @@ class ItemView(APIView):
         return AddItem.perform(user=request.user, item_id=item_id, params=request.data)
 
     def get(self, request, item_id):
-        item = self.get_item_for_user(request.user, item_id)
-        if not item:
-            return Response(
-                {"error": "Item not found or does not belong to you"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        user_book = self.get_user_book(request.user, item)
-        if not user_book:
-            return Response(
-                {"error": "No such user-book association found"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        return Response(self.item_data_from(item, user_book), status=status.HTTP_200_OK)
-
-    def get_item_for_user(self, user, item_id):
-        try:
-            return Item.objects.get(id=item_id, user=user)
-        except Item.DoesNotExist:
-            return None
-
-    def get_user_book(self, user, item):
-        resource = item.get_resource()
-        try:
-            return UserBook.objects.get(user=user, book=resource)
-        except UserBook.DoesNotExist:
-            return None
-
-    def item_data_from(self, item, user_book):
-        return {
-            "id": item.id,
-            "isbn": user_book.book.isbn,
-            "title": user_book.title_override or user_book.book.title,
-            "author": user_book.author_override or user_book.book.author,
-            "thumbnail": user_book.book.image_url,
-            "quantity": user_book.quantity,
-        }
+        return GetItem.perform(user=request.user, item_id=item_id)
 
 
 class ItemsView(APIView):
