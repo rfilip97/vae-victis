@@ -7,7 +7,7 @@ class ItemView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request, item_id):
-        return DeleteItem.perform(user=request.user, item_id=item_id)
+        return DeleteItem().perform(user=request.user, item_id=item_id)
 
     def put(self, request, item_id):
         return UpdateItem.perform(
