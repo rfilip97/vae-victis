@@ -37,7 +37,7 @@ def update_user_book(user_book, data):
     user_book.save()
 
 
-class AddItem:
+class UpdateItem:
     @staticmethod
     def perform(user, item_id, params):
         item = get_item_for_user(user, item_id)
