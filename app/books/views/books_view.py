@@ -7,4 +7,4 @@ class BooksView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        return ScanBook.perform(request.GET.get("isbn", None))
+        return ScanBook().perform(request.GET.get("isbn", None))
