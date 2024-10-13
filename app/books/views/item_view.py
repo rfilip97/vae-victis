@@ -15,4 +15,4 @@ class ItemView(APIView):
         )
 
     def get(self, request, item_id):
-        return GetItem.perform(user=request.user, item_id=item_id)
+        return GetItem().perform(user=request.user, item_id=item_id)
