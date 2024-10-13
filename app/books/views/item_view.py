@@ -10,7 +10,7 @@ class ItemView(APIView):
         return DeleteItem().perform(user=request.user, item_id=item_id)
 
     def put(self, request, item_id):
-        return UpdateItem.perform(
+        return UpdateItem().perform(
             user=request.user, item_id=item_id, params=request.data
         )
 
