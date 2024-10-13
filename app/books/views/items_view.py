@@ -10,4 +10,4 @@ class ItemsView(APIView):
         return GetItems.perform(request.user, request.GET)
 
     def post(self, request):
-        return AddItem.perform(request.user, request.data)
+        return AddItem().perform(request.user, request.data)
