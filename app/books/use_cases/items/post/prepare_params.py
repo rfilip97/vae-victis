@@ -8,12 +8,12 @@ BOOK_TYPE = "book"
 
 class PrepareParams(Step):
     def perform(self, context):
-        params = context["params"]
+        params = context.params
 
-        context["isbn"] = params.get("isbn")
-        context["item_type"] = params.get("type")
+        context.isbn = params.get("isbn")
+        context.item_type = params.get("type")
 
-        if not context["item_type"] == BOOK_TYPE:
+        if not context.item_type == BOOK_TYPE:
             return Response(
                 {"error": "Unsupported item type"}, status=status.HTTP_400_BAD_REQUEST
             )

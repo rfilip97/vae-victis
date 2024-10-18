@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 class FetchBook(Step):
     def perform(self, context):
-        isbn = context["isbn"]
+        isbn = context.isbn
 
         book_info = BooksRepositoryFactory.get_repository().get_book_info(isbn)
 
@@ -16,7 +16,7 @@ class FetchBook(Step):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        context["book_data"] = self._parse_book_data(book_info)
+        context.book_data = self._parse_book_data(book_info)
 
     def _parse_book_data(self, book_data):
         book_info = book_data["items"][0]["volumeInfo"]

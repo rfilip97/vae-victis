@@ -5,8 +5,8 @@ from rest_framework import status
 
 class PrepareResponse(Step):
     def perform(self, context):
-        item = context["item"]
-        user_book = context["user_book"]
+        item = context.item
+        user_book = context.user_book
 
         return Response(
             self._item_data_from(item, user_book), status=status.HTTP_200_OK

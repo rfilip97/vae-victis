@@ -4,10 +4,10 @@ from books.models import Item, UserBook
 
 class AddItemAndUserBook(Step):
     def perform(self, context):
-        user = context["user"]
-        book = context["book"]
-        item_type = context["item_type"]
-        isbn = context["isbn"]
+        user = context.user
+        book = context.book
+        item_type = context.item_type
+        isbn = context.isbn
         title = book.title
         author = book.author
 

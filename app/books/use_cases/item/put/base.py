@@ -1,4 +1,5 @@
 from utils.use_case import UseCase
+from utils.context import Context
 from .validate_params import ValidateParams
 from .get_item import GetItem
 from .get_user_book import GetUserBook
@@ -16,4 +17,4 @@ class UpdateItem(UseCase):
             PrepareResponse,
         ]
 
-        return super().perform({"user": user, "item_id": item_id, "params": params})
+        return super().perform(Context(user=user, item_id=item_id, params=params))

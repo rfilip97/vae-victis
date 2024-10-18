@@ -5,7 +5,7 @@ from rest_framework import status
 
 class PrepareParams(Step):
     def perform(self, context):
-        isbn = context.get("isbn", None)
+        isbn = context.isbn
 
         if not isbn:
             return Response(

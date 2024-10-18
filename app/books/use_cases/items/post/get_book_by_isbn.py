@@ -6,8 +6,8 @@ from rest_framework.response import Response
 
 class GetBookByIsbn(Step):
     def perform(self, context):
-        isbn = context["isbn"]
-        user = context["user"]
+        isbn = context.isbn
+        user = context.user
         book = None
 
         try:
@@ -24,7 +24,7 @@ class GetBookByIsbn(Step):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        context["book"] = book
+        context.book = book
 
     def _user_already_has_book(self, user, book):
         return UserBook.objects.filter(user=user, book=book).exists()

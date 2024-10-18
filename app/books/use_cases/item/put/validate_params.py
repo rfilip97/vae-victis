@@ -5,7 +5,7 @@ from rest_framework import status
 
 class ValidateParams(Step):
     def perform(self, context):
-        params = context["params"]
+        params = context.params
         item_type = params.get("type")
         quantity = params.get("quantity")
 

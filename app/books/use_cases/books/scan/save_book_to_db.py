@@ -4,7 +4,7 @@ from books.models import Book
 
 class SaveBookToDb(Step):
     def perform(self, context):
-        book_data = context["book_data"]
+        book_data = context.book_data
 
         Book.objects.create(
             isbn=book_data["isbn"],

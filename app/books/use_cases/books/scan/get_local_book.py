@@ -7,7 +7,7 @@ from rest_framework import status
 class GetLocalBook(Step):
     def perform(self, context):
         try:
-            book = Book.objects.get(isbn=context["isbn"])
+            book = Book.objects.get(isbn=context.isbn)
 
             return Response(self._response(book), status=status.HTTP_200_OK)
         except Book.DoesNotExist:

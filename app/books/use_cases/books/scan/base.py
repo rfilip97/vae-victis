@@ -1,4 +1,5 @@
 from utils.use_case import UseCase
+from utils.context import Context
 from .prepare_params import PrepareParams
 from .get_local_book import GetLocalBook
 from .fetch_book import FetchBook
@@ -16,4 +17,4 @@ class ScanBook(UseCase):
             PrepareResponse,
         ]
 
-        return super().perform({"isbn": isbn})
+        return super().perform(Context(isbn=isbn))
