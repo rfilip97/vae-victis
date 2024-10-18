@@ -1,6 +1,5 @@
 from utils.step import Step
 from books.models import Book
-from rest_framework.response import Response
 from rest_framework import status
 
 
@@ -9,7 +8,8 @@ class GetLocalBook(Step):
         try:
             book = Book.objects.get(isbn=context.isbn)
 
-            return Response(self._response(book), status=status.HTTP_200_OK)
+            context.response_body = self._response(book)
+            context.status_code = status.HTTP_200_OK
         except Book.DoesNotExist:
             pass
 

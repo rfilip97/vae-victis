@@ -159,7 +159,7 @@ class ItemDetailViewTest(APITestCase):
             reverse("item_details", kwargs={"item_id": self.item.id}), data
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.data["error"], "Unsupported item type")
+        self.assertEqual(response.data["errors"]["item_type"], "Unsupported item type")
 
     def test_update_item_invalid_quantity(self):
         data = {
@@ -174,7 +174,9 @@ class ItemDetailViewTest(APITestCase):
             reverse("item_details", kwargs={"item_id": self.item.id}), data
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.data["error"], "Quantity cannot be less than 0")
+        self.assertEqual(
+            response.data["errors"]["quantity"], "Quantity cannot be less than 0"
+        )
 
     def test_update_item_not_found(self):
         data = {

@@ -1,6 +1,5 @@
 from utils.step import Step
 from rest_framework import status
-from rest_framework.response import Response
 
 
 BOOK_TYPE = "book"
@@ -14,6 +13,5 @@ class PrepareParams(Step):
         context.item_type = params.get("type")
 
         if not context.item_type == BOOK_TYPE:
-            return Response(
-                {"error": "Unsupported item type"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            context.error = 'Unsupported item type'
+            context.status_code = status.HTTP_400_BAD_REQUEST

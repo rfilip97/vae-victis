@@ -5,6 +5,5 @@ from rest_framework import status
 
 class PrepareResponse(Step):
     def perform(self, context):
-        return Response(
-            {"message": "Item deleted successfully"}, status=status.HTTP_200_OK
-        )
+        context.message = 'Item deleted successfully'
+        context.status_code = status.HTTP_200_OK

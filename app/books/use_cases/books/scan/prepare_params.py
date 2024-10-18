@@ -1,13 +1,12 @@
 from utils.step import Step
-from rest_framework.response import Response
 from rest_framework import status
-
+import pdb
 
 class PrepareParams(Step):
     def perform(self, context):
         isbn = context.isbn
 
         if not isbn:
-            return Response(
-                {"error": "ISBN not provided"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            pdb.set_trace()
+            context.error = 'ISBN not provided'
+            context.status_code = status.HTTP_404_NOT_FOUND

@@ -1,7 +1,6 @@
 from utils.step import Step
 from repositories.books_repository.book_repository_factory import BooksRepositoryFactory
 from rest_framework import status
-from rest_framework.response import Response
 
 
 class FetchBook(Step):
@@ -11,10 +10,8 @@ class FetchBook(Step):
         book_info = BooksRepositoryFactory.get_repository().get_book_info(isbn)
 
         if book_info["totalItems"] == 0:
-            return Response(
-                {"error": "No book found with the provided ISBN"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+            context.error = 'No book found with the provided ISBN'
+            context.status_code = status.HTTP_404_NOT_FOUND
 
         context.book_data = self._parse_book_data(book_info)
 

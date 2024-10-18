@@ -1,5 +1,4 @@
 from utils.step import Step
-from rest_framework.response import Response
 from rest_framework import status
 
 
@@ -9,16 +8,17 @@ class ValidateParams(Step):
         item_type = params.get("type")
         quantity = params.get("quantity")
 
+        errors = {}
+
         if not self._is_valid_item_type(item_type):
-            return Response(
-                {"error": "Unsupported item type"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            errors['item_type'] = 'Unsupported item type'
 
         if not self._is_valid_quantity(quantity):
-            return Response(
-                {"error": "Quantity cannot be less than 0"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            errors['quantity'] = 'Quantity cannot be less than 0'
+
+        if errors:
+            context.errors = errors
+            context.status_code = status.HTTP_400_BAD_REQUEST
 
     def _is_valid_item_type(self, item_type):
         return item_type == "book"
