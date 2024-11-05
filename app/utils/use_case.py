@@ -17,13 +17,13 @@ class UseCase:
                 response_data = {}
 
                 if context.message is not None:
-                    response_data['message'] = context.message
+                    response_data["message"] = context.message
 
                 if context.error is not None:
-                    response_data['error'] = context.error
+                    response_data["error"] = context.error
 
                 if context.errors is not None:
-                    response_data['errors'] = context.errors
+                    response_data["errors"] = context.errors
 
                 return Response(response_data, status=context.status_code)
 

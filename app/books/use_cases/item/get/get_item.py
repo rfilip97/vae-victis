@@ -11,5 +11,5 @@ class GetItem(Step):
         try:
             context.item = Item.objects.get(id=item_id, user=user)
         except Item.DoesNotExist:
-            context.error = 'Item not found or does not belong to you'
+            context.error = "Item not found or does not belong to you"
             context.status_code = status.HTTP_404_NOT_FOUND

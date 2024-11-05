@@ -13,5 +13,5 @@ class PrepareParams(Step):
         context.item_type = params.get("type")
 
         if not context.item_type == BOOK_TYPE:
-            context.error = 'Unsupported item type'
+            context.error = "Unsupported item type"
             context.status_code = status.HTTP_400_BAD_REQUEST

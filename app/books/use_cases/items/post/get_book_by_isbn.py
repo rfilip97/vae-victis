@@ -13,13 +13,13 @@ class GetBookByIsbn(Step):
             book = Book.objects.get(isbn=isbn)
 
             if self._user_already_has_book(user, book):
-                context.error = 'This book has already been added to your items.'
+                context.error = "This book has already been added to your items."
                 context.status_code = status.HTTP_400_BAD_REQUEST
 
             context.book = book
 
         except Book.DoesNotExist:
-            context.error = 'Book not found. Please scan the book first.'
+            context.error = "Book not found. Please scan the book first."
             context.status_code = status.HTTP_400_BAD_REQUEST
 
     def _user_already_has_book(self, user, book):

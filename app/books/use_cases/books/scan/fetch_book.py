@@ -10,7 +10,7 @@ class FetchBook(Step):
         book_info = BooksRepositoryFactory.get_repository().get_book_info(isbn)
 
         if book_info["totalItems"] == 0:
-            context.error = 'No book found with the provided ISBN'
+            context.error = "No book found with the provided ISBN"
             context.status_code = status.HTTP_404_NOT_FOUND
 
         context.book_data = self._parse_book_data(book_info)

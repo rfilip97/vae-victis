@@ -11,10 +11,10 @@ class ValidateParams(Step):
         errors = {}
 
         if not self._is_valid_item_type(item_type):
-            errors['item_type'] = 'Unsupported item type'
+            errors["item_type"] = "Unsupported item type"
 
         if not self._is_valid_quantity(quantity):
-            errors['quantity'] = 'Quantity cannot be less than 0'
+            errors["quantity"] = "Quantity cannot be less than 0"
 
         if errors:
             context.errors = errors

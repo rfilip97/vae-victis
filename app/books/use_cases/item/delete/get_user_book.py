@@ -14,5 +14,5 @@ class GetUserBook(Step):
             context.user_book = UserBook.objects.get(user=user, book=resource)
 
         except UserBook.DoesNotExist:
-            context.error = 'User-book association not found'
+            context.error = "User-book association not found"
             context.status_code = status.HTTP_404_NOT_FOUND
